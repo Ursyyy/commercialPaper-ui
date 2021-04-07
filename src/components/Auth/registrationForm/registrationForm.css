@@ -1,0 +1,36 @@
+.box{
+    /* background-color: #aaaaaa;
+    display: 'flex';
+    flex-direction: 'column';
+    align-items: 'center'; */
+    margin-bottom: 10px;
+    width: 100%;
+    margin-top: 25%;
+    background-color: #fff;
+    padding: 15px 15px;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);
+    border-radius: 10px;
+}
+
+.fileBlock{
+    display: flex;
+}
+
+.fileBlock .fileName{
+    margin: 7px 0 7px 15px;
+    font-size: 15px;
+}
+
+.error{
+    display: none;
+}
+
+.error.sign{
+    font-size: 0.8em;
+    color: #D8000C;
+    display: block;
+    /* transition: background 1s ease-in; */
+}
+.error.sign.reg{
+    margin-bottom: -10px;
+}

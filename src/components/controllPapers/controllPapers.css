@@ -1,0 +1,25 @@
+p{
+    font-size: 14px;
+    margin: 8px 0 8px 8px;
+}
+
+.controllPapers{
+    margin: 40px auto;
+}
+
+.caption{
+    margin: 20px auto;
+}
+
+.error{
+    display: none;
+}
+
+.error.show{
+    font-size: 0.8em;
+    color: #D8000C;
+    display: block;
+    margin-left: 0px;
+    display: block;
+    margin-bottom: -4px;
+}
