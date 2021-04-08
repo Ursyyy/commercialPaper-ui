@@ -1,4 +1,5 @@
 import React, {useState} from 'react'
+import axios from 'axios';
 
 import Container from '@material-ui/core/Container'
 import Button from '@material-ui/core/Button'
@@ -10,75 +11,72 @@ import Select from '@material-ui/core/Select';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid'
 import Link from '@material-ui/core/Link'
+import Snackbar from '@material-ui/core/Snackbar'
+import Alert from '@material-ui/lab/Alert'
 
 import makeTheme from '../classes'
-
-// import axios from 'axios'
+import getCSR from '../csr'
 
 import './registrationForm.css'
-import axios from 'axios';
 
 
-const RegistrationForm = ({changeAuth, auth}) => {
+const RegistrationForm =  ({changeAuth, loader}) => {
     const classes = makeTheme()
     const [name, setName] = useState('')
     const [company, setCompany] = useState('')
-    const [errorName, setErrorName] = useState(false)
-    const [errorUniqueName, setErrorUniqueName] = useState(false)
-    const [errorCompany, setErrorCompany] = useState(false)
+    const [openInfo, setOpenInfo] = useState(false)
+    const [infoMsg, setInfoMsg] = useState('')
     const re = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+    
     const handleName = e => {
-        setErrorName(false)
-        setErrorUniqueName(false)
         setName(e.target.value)
     }
 
     const handleCompany = e => {
-        setErrorCompany(false)
         setCompany(e.target.value)
     }
-    const signUp = (e) => {
-        if(name === ''){
-            setErrorName(true)
+    const signUp = async (e) => {
+        if(name === '' || !re.test(name)){
+            setInfoMsg('You must enter a name, it must be like name@domen.com')
+            setName('')
+            setOpenInfo(true)
             return
         }
         if(company === ''){
-            setErrorCompany(true)
+            setInfoMsg('You must choose a company')
+            setOpenInfo(true)
             return
         }
-        if(!re.test(name)){
-            setErrorName(true)
-            return
-        }
-        if(errorName || errorCompany || errorUniqueName){
-            return
-        }
-        axios.post('http://192.168.88.21:3000/api/registeruser', 
-            {'name': name, 'company': company},
+        loader(true)
+        const csr = getCSR({name, company})
+        let resp = await axios.post('http://192.168.88.21:3000/api/registeruser', 
+            {'name': name, 'company': company, csr: csr.csrPem},
                 {headers: {
                     'Accept': '*/*',
                     'Content-Type': 'application/json; charset=utf-8',
                     "Access-Control-Allow-Origin": "*"
                 }})
-            .then( resp => {
-                if(resp.data.error){
-                    setErrorUniqueName(true)
-                }
-                else{
-                    let data = resp.data
-                    console.log(data)
-                    download(JSON.stringify(data.certificate), name + '.pem' )
-                    download(JSON.stringify(data.privateKey), name + '.id' )
-                    sessionStorage.setItem('certificate', data.certificate)
-                    sessionStorage.setItem('privateKey', data.privateKey)
-                    // auth({
-                    //     name: name,
-                    //     company: company
-                    // })
-                }
-            })
-            .catch( error => console.log(error))        
+        if(resp.data.error){
+            setInfoMsg('This name is already in use')
+            setOpenInfo(true)
+        }
+        else{
+            download(csr.privateKeyPem, csr.privateHex + '_pk.pem' )
+            let data = resp.data
+            download(JSON.stringify(data.certificate).replace(/\\n/g, '\n').replace(/"/g, ''), name + '.pem' )
+            sessionStorage.setItem('certificate', data.certificate)
+            // sessionStorage.setItem('privateKey', data.privateKey)
+            // auth({
+            //     name: name,
+            //     company: company
+            // })
+        }
+        loader(false)
     }
+    
+    const handleClose = (event) => {
+        setOpenInfo(false);
+    };
 
     const download = (text, filename) => {
         var element = document.createElement('a');
@@ -101,8 +99,6 @@ const RegistrationForm = ({changeAuth, auth}) => {
                 <Typography component="h1" variant="h5" className={classes.header}>
                     Sign up
                 </Typography>
-                <p className={errorName ? "error sign reg" : "error"}>You must enter a name, it must be like name@domen.com</p>
-                <p className={errorUniqueName ? "error sign reg" : "error"}>This name is already in use</p>
                 <TextField
                     className={classes.textField}
                     variant="outlined"
@@ -112,7 +108,6 @@ const RegistrationForm = ({changeAuth, auth}) => {
                     label="Your name"
                     onChange={handleName}
                 />
-                <p className={errorCompany ? "error sign reg" : "error"}>You must choose a company</p>
                 <FormControl 
                     className={classes.textField}
                     margin="normal"
@@ -126,8 +121,8 @@ const RegistrationForm = ({changeAuth, auth}) => {
                         onChange={handleCompany}
                         label="Company"
                         >
-                        <MenuItem value="digibank">Digibank</MenuItem>
-                        <MenuItem value="magnetocorp">Magnetocorp</MenuItem>
+                        <MenuItem value="org1">Digibank</MenuItem>
+                        <MenuItem value="org2">Magnetocorp</MenuItem>
                     </Select>
                     
                 </FormControl>
@@ -153,7 +148,18 @@ const RegistrationForm = ({changeAuth, auth}) => {
                     </Link>
                 </Grid>
             </div>
-
+            <Snackbar 
+                open={openInfo} 
+                autoHideDuration={3000} 
+                onClose={handleClose}
+                >
+                <Alert 
+                onClose={handleClose}
+                severity='error'
+                >
+                    {infoMsg}
+                </Alert>
+            </Snackbar>
         </Container>
     )
 }

@@ -21,27 +21,15 @@ const makeTheme = makeStyles( theme => ({
 const AuthForm = ({setUser}) => {
     const [auth, setAuth] = useState(false)
     const [loader, setLoader] = useState(false)
-    const history = useHistory()
+    // const history = useHistory()
     const classes = makeTheme()
     const changeAuthForm = () => {
         setAuth(!auth)
     } 
 
-    const changeLoader = state => {
-        setLoader(state)
-    }
-
-    const Auth = (user) => {
-        setUser(user)
-        setLoader(true)
-        setTimeout(() => {
-            setLoader(false)
-            history.push('/papers')
-        }, 3000) 
-    }
     return (
         <div>
-            {auth ? <RegistrationForm changeAuth={changeAuthForm} auth={Auth}/> : <LoginForm changeAuth={changeAuthForm} auth={Auth}/>}
+            {auth ? <RegistrationForm changeAuth={changeAuthForm} loader={setLoader}/> : <LoginForm changeAuth={changeAuthForm} loader={setLoader}/>}
             <Backdrop className={classes.loader} open={loader}>
                 <CircularProgress className={classes.circle} />
             </Backdrop>

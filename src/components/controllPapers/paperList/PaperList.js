@@ -101,10 +101,7 @@ const PaperList = ({user}) => {
         setOpen(true);
     };
 
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
+    const handleClose = (event) => {
         setOpenHistory(false)
         setOpen(false);
     };
@@ -157,9 +154,6 @@ const PaperList = ({user}) => {
 
     return (
         <Container className={classes.container}>
-            {/* <Typography className="caption" variant="h2" component="h2">
-                <div>Papers list</div>
-            </Typography> */}
             <Grid container className={classes.root} spacing={2}>
                 <Grid item xs={12}>
                     <Grid container justify="center" spacing={2}>

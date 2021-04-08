@@ -65,7 +65,15 @@ const makeTheme = makeStyles( theme => ({
     },
     uploadFileButton:{
       marginBottom: 10,
-    }
+    },
+    dragNdrop:{
+      minHeight: 170
+    },
+    dragNdropPreview: {
+      minWidth: 120,
+      maxWidth: 220
+    },
+  
 
 }))
 

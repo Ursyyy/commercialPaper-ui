@@ -1,74 +1,94 @@
 import React, {useState} from 'react'
+import axios from 'axios'
 
-import Container from '@material-ui/core/Container';
+import Container from '@material-ui/core/Container'
 import Button from '@material-ui/core/Button'
-import Typography from '@material-ui/core/Typography';
+import Typography from '@material-ui/core/Typography'
 import Grid from '@material-ui/core/Grid'
 import Link from '@material-ui/core/Link'
-import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import { DropzoneArea } from 'material-ui-dropzone'
+import Snackbar from '@material-ui/core/Snackbar'
+import Alert from '@material-ui/lab/Alert'
 
 import makeTheme from '../classes'
-import axios from 'axios';
 
-const LoginForm = ({changeAuth, auth}) => {
+/**
+ * @param {string} certText 
+ * @returns {boolean}
+ */
+const isCertificate = certText => {
+    return certText.startsWith('-----BEGIN CERTIFICATE-----') && certText.match(/-----END CERTIFICATE-----\s*$/)
+}
+
+/**
+ * @param {string} prKeyText 
+ * @returns {boolean}
+ */
+const isPrivateKey = prKeyText => {
+    return prKeyText.startsWith('-----BEGIN PRIVATE KEY-----') && prKeyText.match(/-----END PRIVATE KEY-----\s*$/)
+}
+
+const LoginForm = ({changeAuth, loader}) => {
     const classes = makeTheme()
     const [certFile, setCertFile] = useState(null)
     const [keyFile, setKeyFile] = useState(null)
-    const [error, setError] = useState(['', false])
-    // const [user, setUser] = useState(null)
+    const [openInfo, setOpenInfo] = useState(['success', false])
+    const [infoMsg, setInfoMsg] = useState('')
     const signUp = (e) => {
         changeAuth()
     }
 
-    const signIn = () => {
+    const handleClose = (event) => {
+        setOpenInfo(false);
+    };
+
+    const signIn = async () => {
         
         if(certFile === null || keyFile === null){
-            setError(['Please, choose a files', true])
+            setInfoMsg('Please, choose a files')
+            setOpenInfo(['error', true])
             return
         }
-        setError(['', false])
-        let certificate = localStorage.getItem('certificate').replace(/\\n/g, '\n'),
-            privateKey = localStorage.getItem('privateKey').replace(/\\r\\n/g, '\n')
-        //192.168.88.21
-        axios.post('http://192.168.88.21:3000/api/login', {
+        // 192.168.88.21
+        loader(true)
+        const certificate = localStorage.getItem('certificate')
+        const privateKey = localStorage.getItem('privateKey')
+        const resp = await axios.post('http://192.168.88.21:3000/api/login', {
             'certificate': certificate,
             'privateKey': privateKey
         })
-        .then(resp => console.log(resp))
-        .catch( err => console.log(err))
-    
-        // axios.post('http://192.168.88.21:3002/api/issue', {
-        //     "certificate": certificate,
-        //     "privateKey": privateKey,
-        //     "paperNumber":"00012", 
-        //     "releaseDate":"2021-01-31", 
-        //     "redeemDate":"2021-11-30", 
-        //     "cost":"500" 
-        // })
+        console.log(resp)
+        loader(false)
         // .then(resp => console.log(resp))
+        // .catch( err => console.log(err))
     }
-
-    const fileUpload = (e,filename) => {
-        let file = e.target.files[0]
-        setError(['', false])
+    /**
+     * @param {array} files
+     * @returns {void}
+     */
+    const fileUpload = files => {
+        let item = files.reverse()[0]
+        if(item == undefined) return
+        let info = 'success'
         let reader = new FileReader()
-        reader.readAsText(file);
-        reader.onload = function() {
-            try{
-                let result = reader.result
-                if(filename === 'key'){ 
-                    setKeyFile(file.name)
-                    localStorage.setItem('privateKey', result)
-                    
-                }else{ 
-                    setCertFile(file.name)
-                    localStorage.setItem('certificate', result)
-                }
-            }catch{
-                setError(['Incorrect files, please, choose again', true])
+        reader.readAsText(item);
+        reader.onload = function(){
+            let result = reader.result
+            if(isCertificate(result)){
+                setCertFile(item.name)
+                setInfoMsg('Certificate uploaded')
+                localStorage.setItem('certificate', result)
+            } else if(isPrivateKey(result)){
+                setKeyFile(item.name)
+                setInfoMsg('Private key uploaded')
+                localStorage.setItem('privateKey', result)
+            } else{
+                files.pop()
+                info = 'error'
+                setInfoMsg('Wrong file')
             }
-            
-          };
+            setOpenInfo([info, true])
+        }
         
     }
 
@@ -82,41 +102,21 @@ const LoginForm = ({changeAuth, auth}) => {
                     Sign in
                 </Typography>
                 <p>Please select the file that you issued after registration</p>
-                <p className={error[1] ? "error sign" : 'error'}>{error[0]}</p>
-                <div className="fileBlock">
-                    <Button
-                        className={classes.uploadFileButton}
-                        variant="contained"
-                        component="label"
-                        startIcon={<CloudUploadIcon />}
-                        >
-                        Upload pem file
-                        <input
-                            type="file"
-                            assept=".pem"
-                            hidden
-                            onChange={e => fileUpload(e, 'pem')}
-                        />
-                    </Button>
-                    { certFile && <p className="fileName">{certFile}</p>}
-                </div>
-                <div className="fileBlock">
-                    <Button
-                        variant="contained"
-                        component="label"
-                        startIcon={<CloudUploadIcon />}
-                        >
-                        Upload id file
-                        <input
-                            type="file"
-                            assept=".pem"
-                            hidden
-                            onChange={e => fileUpload(e, 'key')}
-                        />
-                    </Button>
-                    { keyFile && <p className="fileName">{keyFile}</p>}
-                </div>
-                <Button 
+                <DropzoneArea
+                    acceptedFiles={['application/*']}
+                    dropzoneClass={classes.dragNdrop}
+                    onChange={fileUpload}
+                    showPreviews={true}
+                    showPreviewsInDropzone={false}
+                    useChipsForPreview
+                    previewGridProps={{container: { spacing: 1, direction: 'row' }}}
+                    previewChipProps={{classes: { root: classes.dragNdropPreview } }}
+                    previewText="Selected files"
+                    dropzoneText="Drop files here"
+                    showAlerts={false}
+                    filesLimit={2}
+                />
+                <Button  
                     variant="contained"
                     className={classes.button}
                     onClick={signIn}                    
@@ -136,7 +136,11 @@ const LoginForm = ({changeAuth, auth}) => {
                     </Link>
                 </Grid>
             </div>
-
+            <Snackbar open={openInfo[1]} autoHideDuration={3000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity={openInfo[0]}>
+                    {infoMsg}
+                </Alert>
+            </Snackbar>
         </Container>
     )
 }
