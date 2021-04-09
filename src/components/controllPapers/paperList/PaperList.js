@@ -45,50 +45,38 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
+// {
+//     TxId: 'f8a6af9b1be6e58ba97f5a0e2e0e305f39b5df45d904b7e7ecd93fad32b86337',
+//     Timestamp: '2021-04-08T08:10:44.252Z',
+//     Value: {
+//       class: 'org.papernet.commercialpaper',
+//       currentState: 'ISSUED',
+//       issuer: 'magnetocorp',
+//       paperNumber: '00003',
+//       issueDateTime: '2020-05-31',
+//       maturityDateTime: '2020-11-30',
+//       faceValue: 50,
+//       mspid: 'Org2MSP',
+//       owner: 'magnetocorp'
+//     }  
+// }
+
 const PaperList = ({user}) => {
     let arr = [
         {
-            item: '00002',
-            price: '12345',
-            owner: 'Magnetocorp',
-            createDate: '2020-05-31',
-            redeemDate: '2020-11-30'
-        },
-        {
-            item: '00003',
-            price: '1222',
-            owner: 'Palm',
-            createDate: '2020-05-31',
-            redeemDate: '2020-11-30'
-        },
-        {
-            item: '00004',
-            price: '53332',
-            owner: 'Magnetocorp',
-            createDate: '2020-05-31',
-            redeemDate: '2020-11-30'
-        },
-        {
-            item: '00005',
-            price: '50000',
-            owner: 'Magnetocorp',
-            createDate: '2020-05-31',
-            redeemDate: '2020-11-30'
-        },
-        {
-            item: '00006',
-            price: '500',
-            owner: 'Nick',
-            createDate: '2020-05-31',
-            redeemDate: '2020-11-30'
-        },
-        {
-            item: '00007',
-            price: '4000',
-            owner: 'Magnetocorp',
-            createDate: '2020-05-31',
-            redeemDate: '2020-11-30'
-        },
+            Key: '\x00org.papernet.paper\x00magnetocorp\x0000007\x00',
+            Record: {
+                class: 'org.papernet.commercialpaper',
+                currentState: 1, //4 - redeemed, 3 - traiding, 2 - not exist, 1 - issued
+                faceValue: 50,
+                issueDateTime: '2020-05-31',
+                issuer: 'magnetocorp',
+                maturityDateTime: '2020-11-30',
+                mspid: 'Org2MSP',
+                owner: 'magnetocorp',
+                paperNumber: '00007'
+            }
+          }   
     ]
     const classes = useStyles();
 

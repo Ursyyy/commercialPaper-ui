@@ -50,7 +50,7 @@ const RegistrationForm =  ({changeAuth, loader}) => {
         loader(true)
         const csr = getCSR({name, company})
         let resp = await axios.post('http://192.168.88.21:3000/api/registeruser', 
-            {'name': name, 'company': company, csr: csr.csrPem},
+            {'name': name, 'company': company},//, #csr: csr.csrPem},
                 {headers: {
                     'Accept': '*/*',
                     'Content-Type': 'application/json; charset=utf-8',
@@ -61,11 +61,13 @@ const RegistrationForm =  ({changeAuth, loader}) => {
             setOpenInfo(true)
         }
         else{
-            download(csr.privateKeyPem, csr.privateHex + '_pk.pem' )
+            // download(csr.privateKeyPem, csr.privateHex + '_pk.pem' )
             let data = resp.data
             download(JSON.stringify(data.certificate).replace(/\\n/g, '\n').replace(/"/g, ''), name + '.pem' )
             sessionStorage.setItem('certificate', data.certificate)
-            // sessionStorage.setItem('privateKey', data.privateKey)
+            sessionStorage.setItem('privateKey', data.privateKey)
+            download(JSON.stringify(data.certificate).replace(/\\r\\n/g, '\n').replace(/"/g, ''), csr.privateHex + '_pk.pem' )
+
             // auth({
             //     name: name,
             //     company: company
