@@ -9,6 +9,7 @@ import Link from '@material-ui/core/Link'
 import { DropzoneArea } from 'material-ui-dropzone'
 import Snackbar from '@material-ui/core/Snackbar'
 import Alert from '@material-ui/lab/Alert'
+import { useHistory } from "react-router-dom"
 
 import makeTheme from '../classes'
 
@@ -34,6 +35,7 @@ const LoginForm = ({changeAuth, loader}) => {
     const [keyFile, setKeyFile] = useState(null)
     const [openInfo, setOpenInfo] = useState(['success', false])
     const [infoMsg, setInfoMsg] = useState('')
+    const history = useHistory()
     const signUp = (e) => {
         changeAuth()
     }
@@ -54,13 +56,13 @@ const LoginForm = ({changeAuth, loader}) => {
         const certificate = localStorage.getItem('certificate')
         const privateKey = localStorage.getItem('privateKey')
         const resp = await axios.post('http://192.168.88.21:3000/api/login', {
-            'certificate': certificate,
-            'privateKey': privateKey
+            certificate,
+            privateKey
         })
         console.log(resp)
+        history.push('/papers')
         loader(false)
-        // .then(resp => console.log(resp))
-        // .catch( err => console.log(err))
+        
     }
     /**
      * @param {array} files

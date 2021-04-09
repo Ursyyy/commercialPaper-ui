@@ -13,7 +13,7 @@ import Grid from '@material-ui/core/Grid'
 import Link from '@material-ui/core/Link'
 import Snackbar from '@material-ui/core/Snackbar'
 import Alert from '@material-ui/lab/Alert'
-
+import { useHistory } from "react-router-dom"
 import makeTheme from '../classes'
 import getCSR from '../csr'
 
@@ -26,6 +26,7 @@ const RegistrationForm =  ({changeAuth, loader}) => {
     const [company, setCompany] = useState('')
     const [openInfo, setOpenInfo] = useState(false)
     const [infoMsg, setInfoMsg] = useState('')
+    const history = useHistory()
     const re = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
     
     const handleName = e => {
@@ -48,9 +49,9 @@ const RegistrationForm =  ({changeAuth, loader}) => {
             return
         }
         loader(true)
-        const csr = getCSR({name, company})
+        const {privateHex} = getCSR({name, company})
         let resp = await axios.post('http://192.168.88.21:3000/api/registeruser', 
-            {'name': name, 'company': company},//, #csr: csr.csrPem},
+            {'name': name, 'company': company},
                 {headers: {
                     'Accept': '*/*',
                     'Content-Type': 'application/json; charset=utf-8',
@@ -61,13 +62,12 @@ const RegistrationForm =  ({changeAuth, loader}) => {
             setOpenInfo(true)
         }
         else{
-            // download(csr.privateKeyPem, csr.privateHex + '_pk.pem' )
             let data = resp.data
             download(JSON.stringify(data.certificate).replace(/\\n/g, '\n').replace(/"/g, ''), name + '.pem' )
             sessionStorage.setItem('certificate', data.certificate)
             sessionStorage.setItem('privateKey', data.privateKey)
-            download(JSON.stringify(data.certificate).replace(/\\r\\n/g, '\n').replace(/"/g, ''), csr.privateHex + '_pk.pem' )
-
+            download(JSON.stringify(data.privateKey).replace(/\\r\\n/g, '\n').replace(/"/g, ''), privateHex + '_pk.pem' )
+            history.push('/papers')
             // auth({
             //     name: name,
             //     company: company

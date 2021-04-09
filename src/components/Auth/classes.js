@@ -4,46 +4,30 @@ const makeTheme = makeStyles( theme => ({
 
     button:{
         marginTop: theme.spacing(2),
-        backgroundColor: "#00add8a0",
+        backgroundColor: "#00add8",
         color: "#fff",
-        '& label.Mui-focused': {
-            color: "#00add8a0",
-          },
-          '& .MuiInput-underline:after': {
-            borderBottomColor: "#00add8a0",
-          },
-          '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-              borderColor: "#00add8a0",
-            },
-            '&:hover fieldset': {
-              borderColor: "#00add8a0",
-            },
-            '&.Mui-focused fieldset': {
-              borderColor: "#00add8a0",
-            },
-          },
+        
     },
     buttonLabel:{
         color: "#e0e0e0"
     },
     textField: {
         '& label.Mui-focused': {
-          color: "#00add8a0",
+        	color: "#00add8a0",
         },
         '& .MuiInput-underline:after': {
-          borderBottomColor: "#00add8a0",
+        	borderBottomColor: "#00add8a0",
         },
         '& .MuiOutlinedInput-root': {
-          '& fieldset': {
-            borderColor: "#00add8a0",
-          },
-          '&:hover fieldset': {
-            borderColor: "#00add8a0",
-          },
-          '&.Mui-focused fieldset': {
-            borderColor: "#00add8a0",
-          },
+			'& fieldset': {
+				borderColor: "#00add8a0",
+			},
+			'&:hover fieldset': {
+				borderColor: "#00add8a0",
+			},
+			'&.Mui-focused fieldset': {
+				borderColor: "#00add8a0",
+			},
         },
     },
     header:{
@@ -73,7 +57,6 @@ const makeTheme = makeStyles( theme => ({
       minWidth: 120,
       maxWidth: 220
     },
-  
 
 }))
 

@@ -3,6 +3,10 @@ import TextField from '@material-ui/core/TextField'
 import Button from '@material-ui/core/Button'
 import {MuiPickersUtilsProvider, KeyboardDatePicker} from '@material-ui/pickers'
 import DateFnsUtils from '@date-io/date-fns';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
 
 import { makeStyles } from '@material-ui/core/styles'
 
@@ -12,8 +16,13 @@ const useStyles = makeStyles((theme) => ({
     container:{
         paddingRight: 20,
         paddingLeft: 20,
-        // margin: ,
-        // display: 'inline-grid'
+        display: 'flex',
+        marginTop: 20
+    },
+    dialog:{
+        display: 'grid',
+        padding: '0px 24px 8px',
+        marginTop: -10
     },
     header:{
         fontSize: '1.1em',
@@ -23,91 +32,130 @@ const useStyles = makeStyles((theme) => ({
         marginLeft: '17%',
         marginRight: '17%'
     },
-    addButton: {
-        marginLeft: "75%"
+    button: {
+        color: "#00add8a0"
     },
     datePicker:{
         height: 30,
-        marginTop: 8,
+        marginTop: 12,
         marginBottom: 23,
         "&.MuiInput-formControl" :{
-            marginTop: 12
+            marginTop: 12,
+            "&.MuiInput-underline:after":{
+                borderBottom: '2px solid #00add8'
+            }
+        },
+        textField: {
+            '& label.Mui-focused': {
+                color: "#00add8a0",
+            },
+            '& .MuiInput-underline:after': {
+                borderBottomColor: "#00add8a0",
+            },
+            '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                    borderColor: "#00add8a0",
+                },
+                '&:hover fieldset': {
+                    borderColor: "#00add8a0",
+                },
+                '&.Mui-focused fieldset': {
+                    borderColor: "#00add8a0",
+                },
+            }
         }
     }
  }));
 
+
+
 const AddPaperBlock = ({addPaper}) => {
     const classes = useStyles()
-    // const datePicker = React.forwardRef()
     const [date, setSelectedDate] = useState(new Date())
-    const [errorDate, setErrorDate] = useState(false)
+    const [error, setError] = useState(false)
     const [price, setPrice] = useState(0)
-    const [errorPrice, setErrorPrice] = useState(false)
+    const [open, setOpen] = React.useState(true);
+
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
 
     const handleDateChange = (newDate) => {
-        setErrorDate(false)
+        setError(false)
         if(newDate < new Date()){
-            setErrorDate(true)
+            setError(true)
             return
         }
+        let d = newDate
         setSelectedDate(newDate)
+        let pad = s => { return (s < 10) ? '0' + s : s; }
+        console.log([pad(d.getDate()), pad(d.getMonth()+1), d.getFullYear()].join('.'))
     }
 
     const handlerPrice = (e) => {
-        setErrorPrice(false)
+        setError(false)
         setPrice(e.target.value)
     }
 
     const btnClick = () => {
         if(isNaN(price)){
-            setErrorPrice(true)
+            setError(true)
             return
         }
-        // addPaper({
-        //     price, date
-        // })
     }
 
     return (
-        <div className={classes.container}>
-            <div>
-                <h6 className={classes.header}>Add new paper</h6>
-            </div>
-            <p className={errorPrice ? "error show": 'error'}>Incorrect number</p>
-            <TextField
-                id="standard-textarea"
-                // label="Price"
-                onChange={handlerPrice}
-                placeholder="Price"
-                type="number"
-                multiline
-                />
-            <p className={errorDate ? "error show": 'error'}>Choose a date greater than today</p>
-            <MuiPickersUtilsProvider className={classes.muiPicker} utils={DateFnsUtils}>
-                <KeyboardDatePicker
-                    className={classes.datePicker}
-                    disableToolbar
-                    variant="inline"
-                    format="dd-MM-yyyy"
-                    margin="normal"
-                    id="date-picker-inline"
-                    label="Date picker inline"
-                    // ref={datePicker}
-                    value={date}
-                    onChange={handleDateChange}
-                    KeyboardButtonProps={{
-                        'aria-label': 'change date',
-                    }}
+        <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+            <DialogTitle id="form-dialog-title">Issue a new paper</DialogTitle>
+            <DialogContent 
+                className={classes.dialog}
+                >
+                <TextField
+                    className={classes.textField}
+                    id="standard-textarea"
+                    label="Price"
+                    onChange={handlerPrice}
+                    placeholder="5000"
+                    type="number"
+                    multiline
+                    />
+                <MuiPickersUtilsProvider className={classes.muiPicker} utils={DateFnsUtils}>
+                    <KeyboardDatePicker
+                        className={classes.datePicker}
+                        disableToolbar
+                        variant="inline"
+                        format="dd.MM.yyyy"
+                        margin="normal"
+                        id="date-picker-inline"
+                        label="Date picker inline"
+                        // ref={datePicker}
+                        value={date}
+                        onChange={handleDateChange}
+                        KeyboardButtonProps={{
+                            'aria-label': 'change date',
+                        }}
                     />
                 </MuiPickersUtilsProvider>
-            <Button 
-                variant="outlined"
-                className={classes.addButton}
-                onClick={btnClick}
-                >
-                    Add
-            </Button>
-        </div>
+            </DialogContent>
+            <DialogActions>
+                <Button 
+                    className={classes.button}
+                    onClick={handleClose}
+                    >
+                    Issue
+                </Button>
+                <Button 
+                    className={classes.button}
+                    onClick={handleClose}
+                    >
+                    Cancel
+                </Button>
+            </DialogActions>
+        </Dialog>
     )
 }
 

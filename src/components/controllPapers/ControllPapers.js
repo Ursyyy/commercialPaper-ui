@@ -12,10 +12,10 @@ req = {cert, paperNumber, }
 */
 
 const ControllPapers = ({user}) => {
-    const history = useHistory()
-    if(user == null){
-        history.replace('/')
-    }
+    // const history = useHistory()
+    // if(user == null){
+    //     history.replace('/')
+    // }
     return (
         <div className="controllPapers" >
             <PaperList user={user}/>
