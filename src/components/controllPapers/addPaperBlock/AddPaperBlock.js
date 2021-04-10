@@ -79,10 +79,8 @@ const AddPaperBlock = ({addPaper}) => {
             setError(true)
             return
         }
-        let d = newDate
-        setSelectedDate(newDate)
         let pad = s => { return (s < 10) ? '0' + s : s; }
-        console.log([pad(d.getDate()), pad(d.getMonth()+1), d.getFullYear()].join('.'))
+        setSelectedDate([pad(newDate.getDate()), pad(newDate.getMonth()+1), newDate.getFullYear()].join('.'))
     }
 
     const handlerPrice = (e) => {
@@ -91,7 +89,7 @@ const AddPaperBlock = ({addPaper}) => {
     }
 
     const btnClick = () => {
-        if(isNaN(price)){
+        if(isNaN(price) || +price < 0){
             setError(true)
             return
         }

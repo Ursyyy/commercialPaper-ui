@@ -1,9 +1,9 @@
 import React, {useState} from 'react'
+import { Route, Switch } from 'react-router'
 import Header from '../header'
 import AuthForm from '../Auth'
 import ControllPapers from '../controllPapers'
-
-import { Route, Switch } from 'react-router'
+import Context from '../storage/Context'
 
 import './app.css'
 
