@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, { useContext, useState } from 'react'
 import axios from 'axios'
 
 import Container from '@material-ui/core/Container'
@@ -11,6 +11,7 @@ import Snackbar from '@material-ui/core/Snackbar'
 import Alert from '@material-ui/lab/Alert'
 import { useHistory } from "react-router-dom"
 
+import { Context } from '../../storage/Context'
 import makeTheme from '../classes'
 
 /**
@@ -33,22 +34,30 @@ const LoginForm = ({changeAuth, loader}) => {
     const classes = makeTheme()
     const [certFile, setCertFile] = useState(null)
     const [keyFile, setKeyFile] = useState(null)
-    const [openInfo, setOpenInfo] = useState(['success', false])
-    const [infoMsg, setInfoMsg] = useState('')
+    // const [openInfo, setOpenInfo] = useState(['success', false])
+    // const [infoMsg, setInfoMsg] = useState('')
+    const [state, dispatch] = useContext(Context);
     const history = useHistory()
     const signUp = (e) => {
         changeAuth()
     }
 
-    const handleClose = (event) => {
-        setOpenInfo(false);
-    };
+    // const handleClose = (event) => {
+    //     setOpenInfo(false);
+    // };
 
     const signIn = async () => {
         
         if(certFile === null || keyFile === null){
-            setInfoMsg('Please, choose a files')
-            setOpenInfo(['error', true])
+            dispatch({
+                type: 'SET_SNACKBAR',
+                payload: {
+                    isOpen: true,
+                    text: "Please, choose a files",
+                    type: 'error'
+                }
+            })
+
             return
         }
         // 192.168.88.21
@@ -71,25 +80,33 @@ const LoginForm = ({changeAuth, loader}) => {
     const fileUpload = files => {
         let item = files.reverse()[0]
         if(item == undefined) return
-        let info = 'success'
+        let type = 'success'
+        let infoMsg;
         let reader = new FileReader()
         reader.readAsText(item);
         reader.onload = function(){
             let result = reader.result
             if(isCertificate(result)){
                 setCertFile(item.name)
-                setInfoMsg('Certificate uploaded')
+                infoMsg = 'Certificate uploaded'
                 localStorage.setItem('certificate', result)
             } else if(isPrivateKey(result)){
                 setKeyFile(item.name)
-                setInfoMsg('Private key uploaded')
+                infoMsg = 'Private key uploaded'
                 localStorage.setItem('privateKey', result)
             } else{
                 files.pop()
-                info = 'error'
-                setInfoMsg('Wrong file')
+                type = 'error'
+                infoMsg = 'Wrong file'
             }
-            setOpenInfo([info, true])
+            dispatch({
+                type: 'SET_SNACKBAR',
+                payload: {
+                    isOpen: true,
+                    text: infoMsg,
+                    type: type
+                }
+            })
         }
         
     }
@@ -138,11 +155,7 @@ const LoginForm = ({changeAuth, loader}) => {
                     </Link>
                 </Grid>
             </div>
-            <Snackbar open={openInfo[1]} autoHideDuration={3000} onClose={handleClose}>
-                <Alert onClose={handleClose} severity={openInfo[0]}>
-                    {infoMsg}
-                </Alert>
-            </Snackbar>
+            
         </Container>
     )
 }
