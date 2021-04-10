@@ -35,36 +35,25 @@ const useStyles = makeStyles((theme) => ({
     button: {
         color: "#00add8a0"
     },
-    datePicker:{
-        height: 30,
-        marginTop: 12,
-        marginBottom: 23,
-        "&.MuiInput-formControl" :{
-            marginTop: 12,
-            "&.MuiInput-underline:after":{
-                borderBottom: '2px solid #00add8'
-            }
+    textField: {
+        '& label.Mui-focused': {
+        	color: "#00add8a0",
         },
-        textField: {
-            '& label.Mui-focused': {
-                color: "#00add8a0",
-            },
-            '& .MuiInput-underline:after': {
-                borderBottomColor: "#00add8a0",
-            },
-            '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                    borderColor: "#00add8a0",
-                },
-                '&:hover fieldset': {
-                    borderColor: "#00add8a0",
-                },
-                '&.Mui-focused fieldset': {
-                    borderColor: "#00add8a0",
-                },
-            }
-        }
-    }
+        '& .MuiInput-underline:after': {
+        	borderBottomColor: "#00add8",
+        },
+        '& .MuiOutlinedInput-root': {
+			'& fieldset': {
+				borderColor: "#00add8",
+			},
+			'&:hover fieldset': {
+				borderColor: "#00add8",
+			},
+			'&.Mui-focused fieldset': {
+				borderColor: "#00add8",
+			},
+        },
+    },
  }));
 
 
@@ -125,7 +114,7 @@ const AddPaperBlock = ({addPaper}) => {
                     />
                 <MuiPickersUtilsProvider className={classes.muiPicker} utils={DateFnsUtils}>
                     <KeyboardDatePicker
-                        className={classes.datePicker}
+                        className={classes.textField}
                         disableToolbar
                         variant="inline"
                         format="dd.MM.yyyy"
