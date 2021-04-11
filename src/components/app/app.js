@@ -3,13 +3,15 @@ import { Route, Switch } from 'react-router'
 import Header from '../header'
 import AuthForm from '../Auth'
 import ControllPapers from '../controllPapers'
-import Context from '../storage/Context'
+import { useGlobalStorage } from '../globalStorage'
+
 
 import './app.css'
 
 const App = () => {
     const [user, setUser] = useState(null)
-
+    const store = useGlobalStorage
+    console.log(store)
     const saveUser = (newUser) => {
         setUser(newUser)
     }
