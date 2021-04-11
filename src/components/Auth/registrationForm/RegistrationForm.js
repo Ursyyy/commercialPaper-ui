@@ -50,7 +50,7 @@ const RegistrationForm =  ({changeAuth, loader}) => {
         }
         loader(true)
         const {privateHex} = getCSR({name, company})
-        let resp = await axios.post('http://192.168.88.21:3000/api/registeruser', 
+        let resp = await axios.post('http://localhost:3000/api/registeruser', 
             {'name': name, 'company': company},
                 {headers: {
                     'Accept': '*/*',

@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import Container from "@material-ui/core/Container"
 import Table from '@material-ui/core/Table';
@@ -22,23 +22,37 @@ import AddPaperBlock from '../addPaperBlock'
 
 import '../controllPapers.css'
 import axios from 'axios';
+import { findAllByDisplayValue } from '@testing-library/dom';
 
 const useStyles = makeStyles((theme) => ({
 	root: {
 		width: '100%',
 	},
-	paper: {
-		// height: 'auto',
-		// minHeight: 165,
-		// width: 220,
-		// maxWidth: 220,
-		// padding: 10
+	noPaper: {
+		margin: "75px 150px",
+		display: 'grid',
+		minHeight: 100,
+		borderRadius: 10,
+		backgroundColor: '#F5F5F599',
+		border: "dashed 2px #90909090",
+		padding: 25,
+		textAlign: 'center'
 	},
-	container:{
+	noPaperText: {
+		fontSize: 22,
+    	margin: 'auto'
+	},
+	noPaperButton: {
+		margin: 'auto',
+		border: '1px solid rgba(0, 0, 0, 0.23)',
+		padding: '5px 20px',
+		maxWidth: 250
+	},
+	container: {
 		// padding: 15,
 		margin: 'auto'
 	},
-	button:{
+	button: {
 		color: "#00add8a0",
 		//   marginLeft: '70%'
 	},
@@ -87,7 +101,7 @@ const columns = [
 //     }  
 // }
 
-const PaperList = ({user}) => {
+const PaperList = () => {
 	let arr = [
 		{
 			Key: '\x00org.papernet.paper\x00magnetocorp\x0000007\x00',
@@ -134,27 +148,32 @@ const PaperList = ({user}) => {
 	] 
 	const classes = useStyles();
 
-	const [open, setOpen] = React.useState(false);
-	const [rows, setRows] = useState(arr)
+	const [open, setOpen] = React.useState(true);
+	const [rows, setRows] = useState([])
 	const [paperHistory, setPaperHistory] = useState('')    
 	const [openHistory, setOpenHistory] = useState(false)
-
-	const handleClick = () => {
-		setOpen(true);
+	const user = {
+		name: "Alex",
+		company: 'magnetocorp'
+	}
+	const openIssueMenu = () => {
+		setOpen(!open);
+		console.log(open)
 	};
 
 	const handleClose = (event) => {
 		setOpenHistory(false)
-		setOpen(false);
 	};
 	
+
+
 	const allPapers = async () => {
-		const resp = await axios.post('http://192.168.88.21:3000/api/history', {
+		const resp = await axios.post('http://localhost:3000/api/history', {
 			certificate: localStorage.getItem('certificate'),
 			privateKey: localStorage.getItem('privateKey'),
 			paperNumber: 'all'
 		})
-		console.log(resp)
+		setRows(resp.data)
 	}
 
 	const viewPaperHistory = paperNo => {
@@ -181,6 +200,15 @@ const PaperList = ({user}) => {
 		.catch( err => console.log(err))
 	}
 
+	const issuePaper = async paper => {
+		setOpen(false)
+		let resp = await axios.post('http://localhost:3000/api/issue', paper)
+		let temp = rows
+		setRows(temp.push(resp.data))
+
+		// console.log(paper)
+	}
+
 	const handleClickOpen = () => {
 		setOpenHistory(true);
 	  };
@@ -190,67 +218,102 @@ const PaperList = ({user}) => {
 		setOpenHistory(false)
 	}
 
+	useEffect( () => {
+		allPapers()
+	}, [])
+
 	return (
 		<Container className={classes.container}>
-			<Paper className={classes.root}>
-			<TableContainer className={classes.container}>
-				<Table stickyHeader aria-label="sticky table">
-				<TableHead>
-					<TableRow>
-					{columns.map((column) => (
-						<TableCell
-						key={column.id}
-						align="center"
-						style={{ minWidth: column.minWidth }}
-						>
-						{column.label}
-						</TableCell>
-					))}
-					</TableRow>
-				</TableHead>
-				<TableBody>
-					{rows.map((row) => {
-					return (
-						<TableRow hover role="checkbox" tabIndex={-1} key={row.Key}>
-						{columns.map((column) => {
-							if(column.id === 'button') return
-							const value = row.Record[column.id];
-							return (
-							<TableCell key={column.id} align='center'>
-								{value}
-							</TableCell>
-							);
-						})}
-							<TableCell key='button' align='center'>
-								<Button 
-									onClick={allPapers} 
-									variant="outlined" 
-									// onClick={() => viewPaperHistory(row.Record.paperNumber)}
-									>
-									History
-								</Button>
-							</TableCell>
+			{rows.length ? 
+				<Paper className={classes.root}>
+					<TableContainer className={classes.container}>
+						<Table stickyHeader aria-label="sticky table">
+							<TableHead>
+								<TableRow>
+									{columns.map((column) => (
+										<TableCell
+											key={column.id}
+											align="center"
+											style={{ minWidth: column.minWidth }}
+											>
+										{column.label}
+										</TableCell>
+									))}
+								</TableRow>
+							</TableHead>
+							<TableBody>
+								{rows.map((row) => {
+								return (
+									<TableRow hover role="checkbox" tabIndex={-1} key={row.Key}>
+									{columns.map((column) => {
+										if(column.id === 'button') return
+										const value = row.Record[column.id];
+										return (
+										<TableCell key={column.id} align='center'>
+											{value}
+										</TableCell>
+										);
+									})}
+										<TableCell key='button' align='center'>
+											{ user.company == 'magnetocorp' ?
+												<Button 
+													onClick={allPapers} 
+													variant="outlined" 
+													// onClick={() => viewPaperHistory(row.Record.paperNumber)}
+													>
+													History
+												</Button> :
+												<Button 
+													variant="outlined" 
+													color="primary"
+													className={classes.button}
+													onClick={allPapers}
+													// classes={{focus:classes.button}}
+													>
+													Buy
+												</Button>
+											}
+										</TableCell>
 
-						</TableRow>
-					);
-					})}
-					<TableRow>
-						<TableCell colSpan={3}><AddPaperBlock/></TableCell>
-					</TableRow>
-				</TableBody>
-				</Table>
-			</TableContainer>
-			{/* <TablePagination
-				// rowsPerPageOptions={[10, 25, 100]}
-				// component="div"
-				// count={rows.length}
-				// rowsPerPage={rowsPerPage}
-				// page={page}
-				// onChangePage={handleChangePage}
-				// onChangeRowsPerPage={handleChangeRowsPerPage}
-				/> */}
-			</Paper>
-			{/* <Paper><AddPaperBlock/></Paper> */}
+									</TableRow>
+								);
+								})}
+								{user.company == 'magnetocorp' ? 
+									<TableRow >
+										<TableCell colSpan={7} align='center'>
+											<Button 
+												onClick={openIssueMenu} 
+												variant="outlined" 
+												// onClick={() => viewPaperHistory(row.Record.paperNumber)}
+												>
+												Issue a new paper
+											</Button>
+										</TableCell>
+									</TableRow>:
+									<></>
+								}
+							</TableBody>
+						</Table>
+					</TableContainer>
+				</Paper>:
+				<div>
+					<Paper 
+						className={classes.noPaper}
+						elevation={1}>
+						<p className={classes.noPaperText}>Magnetocorp has not issued a paper yet</p>
+						{user.company == 'magnetocorp' ? 
+							<Button 
+								className={classes.noPaperButton}
+								onClick={openIssueMenu} 
+								variant="outlined" 
+								// onClick={() => viewPaperHistory(row.Record.paperNumber)}
+								>
+								Issue a new paper
+							</Button> : <></>}
+					</Paper>
+				</div>
+			}
+	
 			<Dialog
 				open={openHistory}
 				onClose={handleCloseHistory}
@@ -274,6 +337,7 @@ const PaperList = ({user}) => {
 					</Button>
 				</DialogActions>
 			</Dialog>
+			{open ? <AddPaperBlock addPaper={issuePaper} lastPaper={rows.reverse()[0]} close={openIssueMenu}/> : <></>}
 	   </Container>
 	)
 }

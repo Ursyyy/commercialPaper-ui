@@ -58,20 +58,35 @@ const useStyles = makeStyles((theme) => ({
 
 
 
-const AddPaperBlock = ({addPaper}) => {
+const AddPaperBlock = ({addPaper, lastPaper, isOpen, close}) => {
     const classes = useStyles()
+
     const [date, setSelectedDate] = useState(new Date())
     const [error, setError] = useState(false)
     const [price, setPrice] = useState(0)
-    const [open, setOpen] = React.useState(true);
+    const [open, setOpen] = useState(true);
+    console.log(open)
 
     const handleClickOpen = () => {
         setOpen(true);
     };
 
     const handleClose = () => {
-        setOpen(false);
+        close(false)
     };
+
+    const issuePaper = () => {
+        let pad = s => { return (s < 10) ? '0' + s : s; }
+        let redeemDate = [pad(date.getDate()), pad(date.getMonth()+1), date.getFullYear()].join('-')
+        let paperNumber = lastPaper === undefined ? paperNumber.Value.paperNumber : '00000'
+        addPaper({
+            certificate: localStorage.getItem('certificate'), 
+            privateKey: localStorage.getItem('privateKey'), 
+            paperNumber,  
+            redeemDate, 
+            cost: price
+        })
+    }
 
     const handleDateChange = (newDate) => {
         setError(false)
@@ -79,8 +94,7 @@ const AddPaperBlock = ({addPaper}) => {
             setError(true)
             return
         }
-        let pad = s => { return (s < 10) ? '0' + s : s; }
-        setSelectedDate([pad(newDate.getDate()), pad(newDate.getMonth()+1), newDate.getFullYear()].join('.'))
+        setSelectedDate(newDate)
     }
 
     const handlerPrice = (e) => {
@@ -96,7 +110,7 @@ const AddPaperBlock = ({addPaper}) => {
     }
 
     return (
-        <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+        <Dialog open={open} onClose={() => close(false)} aria-labelledby="form-dialog-title">
             <DialogTitle id="form-dialog-title">Issue a new paper</DialogTitle>
             <DialogContent 
                 className={classes.dialog}
@@ -131,13 +145,13 @@ const AddPaperBlock = ({addPaper}) => {
             <DialogActions>
                 <Button 
                     className={classes.button}
-                    onClick={handleClose}
+                    onClick={issuePaper}
                     >
                     Issue
                 </Button>
                 <Button 
                     className={classes.button}
-                    onClick={handleClose}
+                    onClick={() => close(false)}
                     >
                     Cancel
                 </Button>

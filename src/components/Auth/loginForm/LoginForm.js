@@ -55,7 +55,7 @@ const LoginForm = ({changeAuth, loader}) => {
         loader(true)
         const certificate = localStorage.getItem('certificate')
         const privateKey = localStorage.getItem('privateKey')
-        const resp = await axios.post('http://192.168.88.21:3000/api/login', {
+        const resp = await axios.post('http://localhost:3000/api/login', {
             certificate,
             privateKey
         })
