@@ -1,17 +1,17 @@
-import React, {useState, useContext} from 'react'
+import React, {useReducer} from 'react'
 import { Route, Switch } from 'react-router'
 import Snackbar from '@material-ui/core/Snackbar'
 import Alert from '@material-ui/lab/Alert'
 import Header from '../header'
 import AuthForm from '../Auth'
 import ControllPapers from '../controllPapers'
-import Store, { Context } from '../storage/Context'
+import Reducer from '../storage/Reducer'
+import Store, { initialState } from '../storage/Context'
 
 import './app.css'
 
 const App = () => {
-    // const [user, setUser] = useState(null)
-    const [state, dispatch] = useContext(Context)
+    const [state, dispatch] = useReducer(Reducer, initialState)
 
     const closeSnackbar = () => {
         dispatch({
@@ -28,14 +28,12 @@ const App = () => {
         <div className="app">
             <Header/>
             <Switch>
-                <Store>
-                    <Route exact path="/">
-                        <AuthForm/>
-                    </Route>
-                    <Route path="/papers">
-                        <ControllPapers/>
-                    </Route>
-                </Store>
+                <Route exact path="/">
+                    <AuthForm/>
+                </Route>
+                <Route path="/papers">
+                    <ControllPapers/>
+                </Route>
             </Switch>
             <Snackbar open={state.snackbar.isOpen} autoHideDuration={3000} onClose={closeSnackbar}>
                 <Alert onClose={closeSnackbar} severity={state.snackbar.type}>

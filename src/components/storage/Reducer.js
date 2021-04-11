@@ -1,6 +1,7 @@
 const Reducer = (state, action) => {
     switch (action.type) {
         case 'SET_SNACKBAR':
+            console.log(action)
             return {
                 ...state,
                 snackbar: action.payload

@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState, useReducer} from 'react'
 import axios from 'axios';
 
 import Container from '@material-ui/core/Container'
@@ -16,7 +16,8 @@ import Alert from '@material-ui/lab/Alert'
 import { useHistory } from "react-router-dom"
 import makeTheme from '../classes'
 import getCSR from '../csr'
-
+import {initialState} from '../../storage/Context'
+import Reducer from '../../storage/Reducer'
 import './registrationForm.css'
 
 
@@ -26,6 +27,7 @@ const RegistrationForm =  ({changeAuth, loader}) => {
     const [company, setCompany] = useState('')
     const [openInfo, setOpenInfo] = useState(false)
     const [infoMsg, setInfoMsg] = useState('')
+    const [state, dispatch] = useReducer(Reducer, initialState)
     const history = useHistory()
     const re = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
     
@@ -36,16 +38,32 @@ const RegistrationForm =  ({changeAuth, loader}) => {
     const handleCompany = e => {
         setCompany(e.target.value)
     }
+
+    const openSnackbar = (text) => {
+        console.log(Text)
+        dispatch({
+            type: 'SET_SNACKBAR',
+            payload: {
+                isOpen: true,
+                text,
+                type: 'error'
+            }
+        })
+        console.log(state)
+    }
+
     const signUp = async (e) => {
         if(name === '' || !re.test(name)){
-            setInfoMsg('You must enter a name, it must be like name@domen.com')
+            // setInfoMsg('You must enter a name, it must be like name@domen.com')
             setName('')
-            setOpenInfo(true)
+            // setOpenInfo(true)
+            openSnackbar('You must enter a name, it must be like name@domen.com')
             return
         }
         if(company === ''){
-            setInfoMsg('You must choose a company')
-            setOpenInfo(true)
+            // setInfoMsg('You must choose a company')
+            openSnackbar('You must choose a company')
+            // setOpenInfo(true)
             return
         }
         loader(true)

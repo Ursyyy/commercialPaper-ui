@@ -22,6 +22,6 @@ const Store = ({children}) => {
         </Context.Provider>
     )
 }
-
+export {initialState}
 export const Context = createContext(initialState)
 export default Store
