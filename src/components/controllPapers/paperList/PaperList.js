@@ -6,10 +6,10 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
-import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button'
+import Typography from '@material-ui/core/Typography'
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
 import Dialog from '@material-ui/core/Dialog';
@@ -56,6 +56,9 @@ const useStyles = makeStyles((theme) => ({
 		color: "#00add8a0",
 		//   marginLeft: '70%'
 	},
+	dialogItem: {
+		minWidth: 350
+	}
 
 }));
 
@@ -102,55 +105,12 @@ const columns = [
 // }
 
 const PaperList = () => {
-	let arr = [
-		{
-			Key: '\x00org.papernet.paper\x00magnetocorp\x0000007\x00',
-			Record: {
-				class: 'org.papernet.commercialpaper',
-				currentState: 1, //4 - redeemed, 3 - traiding, 2 - not exist, 1 - issued
-				faceValue: 50,
-				issueDateTime: '2020-05-31',
-				issuer: 'magnetocorp',
-				maturityDateTime: '2020-11-30',
-				mspid: 'Org2MSP',
-				owner: 'magnetocorp',
-				paperNumber: '00001'
-			}
-		},
-		{
-			Key: '\x00org.papernet.paper\x00magnetocorp\x0000008\x00',
-			Record: {
-				class: 'org.papernet.commercialpaper',
-				currentState: 1, 
-				faceValue: 50,
-				issueDateTime: '2020-05-31',
-				issuer: 'magnetocorp',
-				maturityDateTime: '2020-11-30',
-				mspid: 'Org2MSP',
-				owner: 'magnetocorp',
-				paperNumber: '00002'
-			}
-		},
-		{
-			Key: '\x00org.papernet.paper\x00magnetocorp\x0000009\x00',
-			Record: {
-				class: 'org.papernet.commercialpaper',
-				currentState: 1, 
-				faceValue: 5000000,
-				issueDateTime: '2020-05-31',
-				issuer: 'magnetocorp',
-				maturityDateTime: '2020-11-30',
-				mspid: 'Org2MSP',
-				owner: 'magnetocorp',
-				paperNumber: '00003'
-			}
-		}   
-	] 
+	
 	const classes = useStyles();
 
-	const [open, setOpen] = React.useState(true);
+	const [open, setOpen] = React.useState(false);
 	const [rows, setRows] = useState([])
-	const [paperHistory, setPaperHistory] = useState('')    
+	const [paperHistory, setPaperHistory] = useState([])    
 	const [openHistory, setOpenHistory] = useState(false)
 	const user = {
 		name: "Alex",
@@ -165,8 +125,6 @@ const PaperList = () => {
 		setOpenHistory(false)
 	};
 	
-
-
 	const allPapers = async () => {
 		const resp = await axios.post('http://localhost:3000/api/history', {
 			certificate: localStorage.getItem('certificate'),
@@ -176,28 +134,33 @@ const PaperList = () => {
 		setRows(resp.data)
 	}
 
-	const viewPaperHistory = paperNo => {
-		axios.post('http://192.168.88.21:3000/api/history', {
+	const viewPaperHistory = async paperNo => {
+		const resp = await axios.post('http://localhost:3000/api/history', {
 			certificate: localStorage.getItem('certificate'),
 			privateKey: localStorage.getItem('privateKey'),
 			paperNumber: paperNo
-		})
-		.then( resp => {
-			console.log(resp)
-			let data = resp.data,
-				resultHistory = ""
-			for(let item of data){
-				resultHistory += 'Status: ' + item['Value']['currentState']
-				resultHistory += '\nTime: ' + item['Timestamp']
-				resultHistory += '\nIssued date: ' + item['Value']['issueDateTime']
-				resultHistory += '\nPrice: ' + item['Value']['faceValue']
-				resultHistory += '\nOwner: ' + item['Value']['owner'] + '\n\n\n'
-			}
-			setPaperHistory(['Paper #' + paperNo,resultHistory])
-			handleClickOpen()
-			
-		})
-		.catch( err => console.log(err))
+		},  { headers: {
+			'Content-Type': 'application/json;charset=UTF-8',
+      		"Access-Control-Allow-Origin": "*",
+		}})
+		console.log(resp)
+		const data = resp.data
+		let resultHistory = []
+		const lastItem = data.reverse()[0]
+		for(let item of data){
+			resultHistory.push(
+				(<div key={item.TxId}>
+					<Typography>Status: {item['Value']['currentState']}</Typography>
+					<Typography>Time: {item['Timestamp'].replace(/[T|Z]/gm, ' ')}</Typography>
+					<Typography>Issued date: {item['Value']['issueDateTime']}</Typography>
+					<Typography>Price: {item['Value']['faceValue']}</Typography>
+					<Typography>Owner: {item['Value']['owner']}</Typography>
+					{item !== lastItem ? <></> : <Typography>&#8203;</Typography>}
+				</div>)
+			)
+		}
+		setPaperHistory(['Paper #' + paperNo, resultHistory])
+		handleClickOpen()
 	}
 
 	const issuePaper = async paper => {
@@ -205,8 +168,6 @@ const PaperList = () => {
 		let resp = await axios.post('http://localhost:3000/api/issue', paper)
 		let temp = rows
 		setRows(temp.push(resp.data))
-
-		// console.log(paper)
 	}
 
 	const handleClickOpen = () => {
@@ -246,7 +207,7 @@ const PaperList = () => {
 								return (
 									<TableRow hover role="checkbox" tabIndex={-1} key={row.Key}>
 									{columns.map((column) => {
-										if(column.id === 'button') return
+										if(column.id === 'button') return 
 										const value = row.Record[column.id];
 										return (
 										<TableCell key={column.id} align='center'>
@@ -257,21 +218,28 @@ const PaperList = () => {
 										<TableCell key='button' align='center'>
 											{ user.company == 'magnetocorp' ?
 												<Button 
-													onClick={allPapers} 
+													onClick={() => viewPaperHistory(row.Record.paperNumber)} 
 													variant="outlined" 
-													// onClick={() => viewPaperHistory(row.Record.paperNumber)}
 													>
 													History
 												</Button> :
+												row.Record.owner === 'magnetocorp' ? 
 												<Button 
 													variant="outlined" 
 													color="primary"
 													className={classes.button}
-													onClick={allPapers}
-													// classes={{focus:classes.button}}
+													// onClick={allPapers}
 													>
 													Buy
+												</Button> : 
+												<Button 
+													variant="outlined" 
+													color="secondary"
+													// onClick={allPapers}
+													>
+													Redeem
 												</Button>
+												
 											}
 										</TableCell>
 
@@ -315,6 +283,7 @@ const PaperList = () => {
 			}
 	
 			<Dialog
+				className={classes.dialogItem}
 				open={openHistory}
 				onClose={handleCloseHistory}
 				scroll={'paper'}
@@ -322,7 +291,7 @@ const PaperList = () => {
 				aria-describedby="scroll-dialog-description"
 			>
 				<DialogTitle id="scroll-dialog-title">{paperHistory[0]}</DialogTitle>
-				<DialogContent dividers={true}>
+				<DialogContent dividers={true} className={classes.dialogItem}>
 					<DialogContentText
 						id="scroll-dialog-description"
 						// ref={descriptionElementRef}
@@ -337,7 +306,7 @@ const PaperList = () => {
 					</Button>
 				</DialogActions>
 			</Dialog>
-			{open ? <AddPaperBlock addPaper={issuePaper} lastPaper={rows.reverse()[0]} close={openIssueMenu}/> : <></>}
+			{open ? <AddPaperBlock addPaper={issuePaper} lastPaper={rows.reverse()[0]} isOpen={open} close={openIssueMenu}/> : <></>}
 	   </Container>
 	)
 }

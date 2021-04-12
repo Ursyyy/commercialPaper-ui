@@ -64,7 +64,7 @@ const AddPaperBlock = ({addPaper, lastPaper, isOpen, close}) => {
     const [date, setSelectedDate] = useState(new Date())
     const [error, setError] = useState(false)
     const [price, setPrice] = useState(0)
-    const [open, setOpen] = useState(true);
+    const [open, setOpen] = useState(isOpen);
     console.log(open)
 
     const handleClickOpen = () => {
