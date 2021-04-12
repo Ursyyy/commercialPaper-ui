@@ -7,7 +7,8 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-
+import Snackbar from '@material-ui/core/Snackbar'
+import Alert from '@material-ui/lab/Alert'
 import { makeStyles } from '@material-ui/core/styles'
 
 import '../controllPapers.css'
@@ -62,23 +63,26 @@ const AddPaperBlock = ({addPaper, lastPaper, isOpen, close}) => {
     const classes = useStyles()
 
     const [date, setSelectedDate] = useState(new Date())
-    const [error, setError] = useState(false)
+    const [error, setError] = useState(['', false])
     const [price, setPrice] = useState(0)
     const [open, setOpen] = useState(isOpen);
-    console.log(open)
-
-    const handleClickOpen = () => {
-        setOpen(true);
-    };
 
     const handleClose = () => {
-        close(false)
+        close(['', false])
     };
 
     const issuePaper = () => {
+        if(isNaN(price) || +price <= 0){
+            setError(['Invalid price, please enter a number greater than zero', true])
+            return
+        }
+        if(date <= new Date()){
+            setError(['Invalid date, please enter a date later than today', true])
+            return
+        }
         let pad = s => { return (s < 10) ? '0' + s : s; }
-        let redeemDate = [pad(date.getDate()), pad(date.getMonth()+1), date.getFullYear()].join('-')
-        let paperNumber = lastPaper === undefined ? paperNumber.Value.paperNumber : '00000'
+        let redeemDate = [pad(date.getDate()), pad(date.getMonth()+1), date.getFullYear()].join('.')
+        let paperNumber = lastPaper === undefined ? '' : lastPaper.Record.paperNumber
         addPaper({
             certificate: localStorage.getItem('certificate'), 
             privateKey: localStorage.getItem('privateKey'), 
@@ -90,8 +94,8 @@ const AddPaperBlock = ({addPaper, lastPaper, isOpen, close}) => {
 
     const handleDateChange = (newDate) => {
         setError(false)
-        if(newDate < new Date()){
-            setError(true)
+        if(newDate <= new Date()){
+            setError(['Invalid date, please enter a date later than today', true])
             return
         }
         setSelectedDate(newDate)
@@ -102,61 +106,68 @@ const AddPaperBlock = ({addPaper, lastPaper, isOpen, close}) => {
         setPrice(e.target.value)
     }
 
-    const btnClick = () => {
-        if(isNaN(price) || +price < 0){
-            setError(true)
-            return
-        }
-    }
-
     return (
-        <Dialog open={open} onClose={() => close(false)} aria-labelledby="form-dialog-title">
-            <DialogTitle id="form-dialog-title">Issue a new paper</DialogTitle>
-            <DialogContent 
-                className={classes.dialog}
-                >
-                <TextField
-                    className={classes.textField}
-                    id="standard-textarea"
-                    label="Price"
-                    onChange={handlerPrice}
-                    placeholder="5000"
-                    type="number"
-                    multiline
-                    />
-                <MuiPickersUtilsProvider className={classes.muiPicker} utils={DateFnsUtils}>
-                    <KeyboardDatePicker
+        <>
+            <Dialog open={open} onClose={() => close(false)} aria-labelledby="form-dialog-title">
+                <DialogTitle id="form-dialog-title">Issue a new paper</DialogTitle>
+                <DialogContent 
+                    className={classes.dialog}
+                    >
+                    <TextField
                         className={classes.textField}
-                        disableToolbar
-                        variant="inline"
-                        format="dd.MM.yyyy"
-                        margin="normal"
-                        id="date-picker-inline"
-                        label="Date picker inline"
-                        // ref={datePicker}
-                        value={date}
-                        onChange={handleDateChange}
-                        KeyboardButtonProps={{
-                            'aria-label': 'change date',
-                        }}
-                    />
-                </MuiPickersUtilsProvider>
-            </DialogContent>
-            <DialogActions>
-                <Button 
-                    className={classes.button}
-                    onClick={issuePaper}
-                    >
-                    Issue
-                </Button>
-                <Button 
-                    className={classes.button}
-                    onClick={() => close(false)}
-                    >
-                    Cancel
-                </Button>
-            </DialogActions>
-        </Dialog>
+                        id="standard-textarea"
+                        label="Price"
+                        onChange={handlerPrice}
+                        placeholder="5000"
+                        type="number"
+                        multiline
+                        />
+                    <MuiPickersUtilsProvider className={classes.muiPicker} utils={DateFnsUtils}>
+                        <KeyboardDatePicker
+                            className={classes.textField}
+                            disableToolbar
+                            variant="inline"
+                            format="dd.MM.yyyy"
+                            margin="normal"
+                            id="date-picker-inline"
+                            label="Date picker inline"
+                            // ref={datePicker}
+                            value={date}
+                            onChange={handleDateChange}
+                            KeyboardButtonProps={{
+                                'aria-label': 'change date',
+                            }}
+                        />
+                    </MuiPickersUtilsProvider>
+                </DialogContent>
+                <DialogActions>
+                    <Button 
+                        className={classes.button}
+                        onClick={issuePaper}
+                        >
+                        Issue
+                    </Button>
+                    <Button 
+                        className={classes.button}
+                        onClick={() => close(false)}
+                        >
+                        Cancel
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Snackbar 
+                open={error[1]} 
+                autoHideDuration={3000} 
+                onClose={() => setError(['', false])}
+                >
+                <Alert 
+                onClose={() => setError(['', false])}
+                severity='error'
+                >
+                    {error[0]}
+                </Alert>
+            </Snackbar>
+        </>
     )
 }
 

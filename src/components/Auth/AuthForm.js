@@ -4,7 +4,6 @@ import RegistrationForm from './registrationForm'
 
 import Backdrop from '@material-ui/core/Backdrop'
 import CircularProgress from '@material-ui/core/CircularProgress'
-import { useHistory } from "react-router-dom"
 import { makeStyles } from '@material-ui/core/styles';
 
 const makeTheme = makeStyles( theme => ({
@@ -29,7 +28,7 @@ const AuthForm = ({setUser}) => {
 
     return (
         <div>
-            {auth ? <RegistrationForm changeAuth={changeAuthForm} loader={setLoader}/> : <LoginForm changeAuth={changeAuthForm} loader={setLoader}/>}
+            {auth ? <RegistrationForm changeAuth={changeAuthForm} loader={setLoader} setUser={setUser}/> : <LoginForm changeAuth={changeAuthForm} loader={setLoader} setUser={setUser}/>}
             <Backdrop className={classes.loader} open={loader}>
                 <CircularProgress className={classes.circle} />
             </Backdrop>

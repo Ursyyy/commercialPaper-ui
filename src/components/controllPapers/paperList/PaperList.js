@@ -22,7 +22,6 @@ import AddPaperBlock from '../addPaperBlock'
 
 import '../controllPapers.css'
 import axios from 'axios';
-import { findAllByDisplayValue } from '@testing-library/dom';
 
 const useStyles = makeStyles((theme) => ({
 	root: {
@@ -58,7 +57,10 @@ const useStyles = makeStyles((theme) => ({
 	},
 	dialogItem: {
 		minWidth: 350
-	}
+	},
+	redeemedPaper:{
+		backgroundColor: '#00000033'
+	},
 
 }));
 
@@ -88,37 +90,16 @@ const columns = [
 	}
   ];
 
-// {
-//     TxId: 'f8a6af9b1be6e58ba97f5a0e2e0e305f39b5df45d904b7e7ecd93fad32b86337',
-//     Timestamp: '2021-04-08T08:10:44.252Z',
-//     Value: {
-//       class: 'org.papernet.commercialpaper',
-//       currentState: 'ISSUED',
-//       issuer: 'magnetocorp',
-//       paperNumber: '00003',
-//       issueDateTime: '2020-05-31',
-//       maturityDateTime: '2020-11-30',
-//       faceValue: 50,
-//       mspid: 'Org2MSP',
-//       owner: 'magnetocorp'
-//     }  
-// }
-
-const PaperList = () => {
+const PaperList = ({user, loader}) => {
 	
 	const classes = useStyles();
-
 	const [open, setOpen] = React.useState(false);
 	const [rows, setRows] = useState([])
+	const [info, setInfo] = useState(['', false])
 	const [paperHistory, setPaperHistory] = useState([])    
 	const [openHistory, setOpenHistory] = useState(false)
-	const user = {
-		name: "Alex",
-		company: 'magnetocorp'
-	}
 	const openIssueMenu = () => {
 		setOpen(!open);
-		console.log(open)
 	};
 
 	const handleClose = (event) => {
@@ -126,7 +107,7 @@ const PaperList = () => {
 	};
 	
 	const allPapers = async () => {
-		const resp = await axios.post('http://localhost:3000/api/history', {
+		const resp = await axios.post('http://192.168.88.21:3000/api/history', {
 			certificate: localStorage.getItem('certificate'),
 			privateKey: localStorage.getItem('privateKey'),
 			paperNumber: 'all'
@@ -135,28 +116,24 @@ const PaperList = () => {
 	}
 
 	const viewPaperHistory = async paperNo => {
-		const resp = await axios.post('http://localhost:3000/api/history', {
+		
+		const resp = await axios.post('http://192.168.88.21:3000/api/history', {
 			certificate: localStorage.getItem('certificate'),
 			privateKey: localStorage.getItem('privateKey'),
 			paperNumber: paperNo
-		},  { headers: {
-			'Content-Type': 'application/json;charset=UTF-8',
-      		"Access-Control-Allow-Origin": "*",
-		}})
-		console.log(resp)
+		})
 		const data = resp.data
 		let resultHistory = []
-		const lastItem = data.reverse()[0]
 		for(let item of data){
 			resultHistory.push(
-				(<div key={item.TxId}>
+				(<>
 					<Typography>Status: {item['Value']['currentState']}</Typography>
 					<Typography>Time: {item['Timestamp'].replace(/[T|Z]/gm, ' ')}</Typography>
 					<Typography>Issued date: {item['Value']['issueDateTime']}</Typography>
 					<Typography>Price: {item['Value']['faceValue']}</Typography>
 					<Typography>Owner: {item['Value']['owner']}</Typography>
-					{item !== lastItem ? <></> : <Typography>&#8203;</Typography>}
-				</div>)
+					<Typography>&#8203;</Typography>
+				</>)
 			)
 		}
 		setPaperHistory(['Paper #' + paperNo, resultHistory])
@@ -164,10 +141,12 @@ const PaperList = () => {
 	}
 
 	const issuePaper = async paper => {
+		loader(true)
 		setOpen(false)
-		let resp = await axios.post('http://localhost:3000/api/issue', paper)
-		let temp = rows
-		setRows(temp.push(resp.data))
+		let resp = await axios.post('http://192.168.88.21:3000/api/issue', paper)
+		allPapers()
+		loader(false)
+		setInfo([`Paper with number ${resp.data.Record.paperNumber} has been successfully issued`, true])
 	}
 
 	const handleClickOpen = () => {
@@ -177,6 +156,30 @@ const PaperList = () => {
 	const handleCloseHistory = () => {
 		setPaperHistory('')
 		setOpenHistory(false)
+	}
+
+	const buyPaper = async paper => {
+		loader(true)
+		let resp = await axios.post('http://192.168.88.21:3000/api/buy', {
+			certificate: localStorage.getItem('certificate'),
+			privateKey: localStorage.getItem('privateKey'),
+			...paper
+		})
+		allPapers()
+		loader(false)
+		setInfo([`Paper with number ${resp.data.paperNumber} has been successfully bought`, true])
+	}
+
+	const redeemPaper = async paper => {
+		loader(true)
+		let resp = await axios.post('http://192.168.88.21:3000/api/redeem', {
+			certificate: localStorage.getItem('certificate'),
+			privateKey: localStorage.getItem('privateKey'),
+			...paper
+		})
+		allPapers()
+		loader(false)
+		setInfo([`Paper with number ${resp.data.paperNumber} has been successfully redeemed`, true])
 	}
 
 	useEffect( () => {
@@ -205,7 +208,12 @@ const PaperList = () => {
 							<TableBody>
 								{rows.map((row) => {
 								return (
-									<TableRow hover role="checkbox" tabIndex={-1} key={row.Key}>
+									<TableRow 
+										className={row.Record.currentState ===  4 ? classes.redeemedPaper: ''}
+										hover={row.Record.currentState !==  4}
+										role="checkbox" 
+										tabIndex={-1} 
+										key={row.Key}>
 									{columns.map((column) => {
 										if(column.id === 'button') return 
 										const value = row.Record[column.id];
@@ -216,29 +224,34 @@ const PaperList = () => {
 										);
 									})}
 										<TableCell key='button' align='center'>
-											{ user.company == 'magnetocorp' ?
+											{ user.company === 'org2' ?
 												<Button 
 													onClick={() => viewPaperHistory(row.Record.paperNumber)} 
 													variant="outlined" 
 													>
 													History
 												</Button> :
-												row.Record.owner === 'magnetocorp' ? 
+												row.Record.currentState ===  1? 
 												<Button 
 													variant="outlined" 
 													color="primary"
 													className={classes.button}
-													// onClick={allPapers}
+													onClick={() => buyPaper(row.Record)}
 													>
 													Buy
 												</Button> : 
-												<Button 
-													variant="outlined" 
-													color="secondary"
-													// onClick={allPapers}
-													>
-													Redeem
-												</Button>
+												new Date(row.Record.maturityDateTime) > new Date() ?
+												row.Record.currentState !==  4 ?
+													<Button 
+														variant="outlined" 
+														color="secondary"
+														onClick={() => redeemPaper(row.Record)}
+														>
+														Redeem
+													</Button>:
+													<>Redeemed</>
+												:
+												<>The paper is awaiting maturity</>
 												
 											}
 										</TableCell>
@@ -246,7 +259,7 @@ const PaperList = () => {
 									</TableRow>
 								);
 								})}
-								{user.company == 'magnetocorp' ? 
+								{user.company === 'org2' ? 
 									<TableRow >
 										<TableCell colSpan={7} align='center'>
 											<Button 
@@ -269,7 +282,7 @@ const PaperList = () => {
 						className={classes.noPaper}
 						elevation={1}>
 						<p className={classes.noPaperText}>Magnetocorp has not issued a paper yet</p>
-						{user.company == 'magnetocorp' ? 
+						{user.company === 'org2' ? 
 							<Button 
 								className={classes.noPaperButton}
 								onClick={openIssueMenu} 
@@ -307,7 +320,19 @@ const PaperList = () => {
 				</DialogActions>
 			</Dialog>
 			{open ? <AddPaperBlock addPaper={issuePaper} lastPaper={rows.reverse()[0]} isOpen={open} close={openIssueMenu}/> : <></>}
-	   </Container>
+			<Snackbar 
+                open={info[1]} 
+                autoHideDuration={3000} 
+                onClose={() => setInfo(['', false])}
+                >
+                <Alert 
+                onClose={() => setInfo(['', false])}
+                severity='info'
+                >
+                    {info[0]}
+                </Alert>
+            </Snackbar>
+		</Container>
 	)
 }
 

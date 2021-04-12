@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React from 'react'
 import { useHistory } from "react-router-dom"
 
 import AppBar from '@material-ui/core/AppBar'
@@ -6,8 +6,6 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import ButtonGroup from '@material-ui/core/ButtonGroup'
-import Snackbar from '@material-ui/core/Snackbar';
-import Alert from '@material-ui/lab/Alert';
 
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -33,22 +31,16 @@ const makeTheme = makeStyles( theme => ({
 const Header = ({user, setUser}) => {
     const classes = makeTheme()
     const history = useHistory()
+
+    if(user == null){
+        user = JSON.parse(localStorage.getItem('user'))
+    }
     const logOut = () => {
         setUser(null)
+        user = null
+        localStorage.clear()
         history.push('/')
     }
-    const [open, setOpen] = useState(false);
-
-    const handleClick = () => {
-        setOpen(true);
-    };
-
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-        return;
-        }
-        setOpen(false);
-    };
 
     return (
         <div className={classes.root}>
@@ -58,7 +50,7 @@ const Header = ({user, setUser}) => {
                     MDC
                 </Typography>
                 {
-                    user == null ?
+                    user === null ?
                     <Button 
                         onClick={logOut}
                         color="inherit"
@@ -66,12 +58,6 @@ const Header = ({user, setUser}) => {
                             Log in
                     </Button> :
                     <ButtonGroup variant="text">
-                        <Button 
-                            color="inherit"
-                            onClick={handleClick}
-                            >
-                            Transactions History
-                        </Button>
                         <Button 
                             onClick={logOut}
                             color="inherit"
@@ -84,11 +70,6 @@ const Header = ({user, setUser}) => {
                     
                 </Toolbar>
             </AppBar>
-            <Snackbar open={open} autoHideDuration={5000} onClose={handleClose}>
-                <Alert onClose={handleClose} severity="info">
-                    Will be added in version 1.1
-                </Alert>
-            </Snackbar>
         </div>
     )
 }

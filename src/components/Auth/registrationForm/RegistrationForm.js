@@ -20,7 +20,7 @@ import getCSR from '../csr'
 import './registrationForm.css'
 
 
-const RegistrationForm =  ({changeAuth, loader}) => {
+const RegistrationForm =  ({changeAuth, loader, setUser}) => {
     const classes = makeTheme()
     const [name, setName] = useState('')
     const [company, setCompany] = useState('')
@@ -50,7 +50,7 @@ const RegistrationForm =  ({changeAuth, loader}) => {
         }
         loader(true)
         const {privateHex} = getCSR({name, company})
-        let resp = await axios.post('http://localhost:3000/api/registeruser', 
+        let resp = await axios.post('http://192.168.88.21:3000/api/registeruser', 
             {'name': name, 'company': company},
                 {headers: {
                     'Accept': '*/*',
@@ -64,9 +64,15 @@ const RegistrationForm =  ({changeAuth, loader}) => {
         else{
             let data = resp.data
             download(JSON.stringify(data.certificate).replace(/\\n/g, '\n').replace(/"/g, ''), name + '.pem' )
-            sessionStorage.setItem('certificate', data.certificate)
-            sessionStorage.setItem('privateKey', data.privateKey)
+            localStorage.setItem('certificate', data.certificate)
+            localStorage.setItem('privateKey', data.privateKey)
+            localStorage.setItem('user', JSON.stringify({
+                name, company
+            }))
             download(JSON.stringify(data.privateKey).replace(/\\r\\n/g, '\n').replace(/"/g, ''), privateHex + '_pk.pem' )
+            setUser({
+                name, company
+            })
             history.push('/papers')
             // auth({
             //     name: name,

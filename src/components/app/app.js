@@ -10,19 +10,15 @@ import './app.css'
 const App = () => {
     const [user, setUser] = useState(null)
 
-    const saveUser = (newUser) => {
-        setUser(newUser)
-    }
-
     return (
         <div className="app">
-            <Header user={user} setUser={saveUser}/>
+            <Header user={user} setUser={setUser}/>
             <Switch>
                 <Route exact path="/">
-                    <AuthForm setUser={saveUser}/>
+                    <AuthForm setUser={setUser}/>
                 </Route>
                 <Route path="/papers">
-                    <ControllPapers user={user}/>
+                    <ControllPapers user={user} setUser={setUser}/>
                 </Route>
             </Switch>
             
