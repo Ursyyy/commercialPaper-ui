@@ -251,7 +251,7 @@ const PaperList = ({user, loader}) => {
 													</Button>:
 													<>Redeemed</>
 												:
-												<>The paper is awaiting maturity</>
+												<>Await for maturity</>
 												
 											}
 										</TableCell>
