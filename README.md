@@ -4,7 +4,7 @@
 
 The application works in conjunction with the [server](https://github.com/multicalor/hf.git), which you can download using the command 
 
-`git clone https://github.com/multicalor/hf.git`
+```git clone https://github.com/multicalor/hf.git```
 
 After which you need to configure the ENV file. You must set the variables REACT_APP_API_URL and REACT_APP_PORT to the address that the server gave you at startup(default is http: // localhost: 3000).
 
