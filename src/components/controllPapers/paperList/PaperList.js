@@ -18,10 +18,10 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
+import axiosInstance from '../../axiosInstance'
 import AddPaperBlock from '../addPaperBlock'
 
 import '../controllPapers.css'
-import axios from 'axios';
 
 const useStyles = makeStyles((theme) => ({
 	root: {
@@ -48,12 +48,10 @@ const useStyles = makeStyles((theme) => ({
 		maxWidth: 250
 	},
 	container: {
-		// padding: 15,
 		margin: 'auto'
 	},
 	button: {
 		color: "#00add8a0",
-		//   marginLeft: '70%'
 	},
 	dialogItem: {
 		minWidth: 350
@@ -107,7 +105,7 @@ const PaperList = ({user, loader}) => {
 	};
 	
 	const allPapers = async () => {
-		const resp = await axios.post('http://192.168.88.21:3000/api/history', {
+		const resp = await axiosInstance.post('/api/history', {
 			certificate: localStorage.getItem('certificate'),
 			privateKey: localStorage.getItem('privateKey'),
 			paperNumber: 'all'
@@ -117,7 +115,7 @@ const PaperList = ({user, loader}) => {
 
 	const viewPaperHistory = async paperNo => {
 		
-		const resp = await axios.post('http://192.168.88.21:3000/api/history', {
+		const resp = await axiosInstance.post('/api/history', {
 			certificate: localStorage.getItem('certificate'),
 			privateKey: localStorage.getItem('privateKey'),
 			paperNumber: paperNo
@@ -143,7 +141,7 @@ const PaperList = ({user, loader}) => {
 	const issuePaper = async paper => {
 		loader(true)
 		setOpen(false)
-		let resp = await axios.post('http://192.168.88.21:3000/api/issue', paper)
+		const resp = await axiosInstance.post('/api/issue', paper)
 		allPapers()
 		loader(false)
 		setInfo([`Paper with number ${resp.data.Record.paperNumber} has been successfully issued`, true])
@@ -160,7 +158,7 @@ const PaperList = ({user, loader}) => {
 
 	const buyPaper = async paper => {
 		loader(true)
-		let resp = await axios.post('http://192.168.88.21:3000/api/buy', {
+		const resp = await axiosInstance.post('/api/buy', {
 			certificate: localStorage.getItem('certificate'),
 			privateKey: localStorage.getItem('privateKey'),
 			...paper
@@ -172,7 +170,7 @@ const PaperList = ({user, loader}) => {
 
 	const redeemPaper = async paper => {
 		loader(true)
-		let resp = await axios.post('http://192.168.88.21:3000/api/redeem', {
+		const resp = await axiosInstance.post('/api/redeem', {
 			certificate: localStorage.getItem('certificate'),
 			privateKey: localStorage.getItem('privateKey'),
 			...paper
@@ -224,36 +222,49 @@ const PaperList = ({user, loader}) => {
 										);
 									})}
 										<TableCell key='button' align='center'>
-											{ user.company === 'org2' ?
-												<Button 
-													onClick={() => viewPaperHistory(row.Record.paperNumber)} 
-													variant="outlined" 
-													>
-													History
-												</Button> :
-												row.Record.currentState ===  1? 
-												<Button 
-													variant="outlined" 
-													color="primary"
-													className={classes.button}
-													onClick={() => buyPaper(row.Record)}
-													>
-													Buy
-												</Button> : 
-												new Date(row.Record.maturityDateTime) > new Date() ?
-												row.Record.currentState !==  4 ?
-													<Button 
-														variant="outlined" 
-														color="secondary"
-														onClick={() => redeemPaper(row.Record)}
-														>
-														Redeem
-													</Button>:
-													<>Redeemed</>
-												:
-												<>Await for maturity</>
-												
-											}
+											{(() => {
+												if(user.company === 'org2'){
+													return (
+														<Button 
+															onClick={() => viewPaperHistory(row.Record.paperNumber)} 
+															variant="outlined" 
+															>
+															History
+														</Button>
+													)
+												} else if(row.Record.currentState ===  1){
+													return (
+														<Button 
+															variant="outlined" 
+															color="primary"
+															className={classes.button}
+															onClick={() => buyPaper(row.Record)}
+															>
+															Buy
+														</Button>
+													)
+												} else if(new Date(row.Record.maturityDateTime) > new Date()){
+													if(row.Record.currentState !==  4){
+														return (
+															<Button 
+																variant="outlined" 
+																color="secondary"
+																onClick={() => redeemPaper(row.Record)}
+																>
+																Redeem
+															</Button>
+														)
+													} else {
+														return (
+															<>Redeemed</>
+														)
+													}
+												} else {
+													return (
+														<>Await for maturity</>
+													)
+												}
+											})()}
 										</TableCell>
 
 									</TableRow>

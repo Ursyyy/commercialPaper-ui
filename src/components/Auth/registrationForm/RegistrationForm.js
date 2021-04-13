@@ -1,5 +1,4 @@
 import React, {useState} from 'react'
-import axios from 'axios';
 
 import Container from '@material-ui/core/Container'
 import Button from '@material-ui/core/Button'
@@ -14,9 +13,10 @@ import Link from '@material-ui/core/Link'
 import Snackbar from '@material-ui/core/Snackbar'
 import Alert from '@material-ui/lab/Alert'
 import { useHistory } from "react-router-dom"
-import makeTheme from '../classes'
+import makeTheme from '../classes' 
 import getCSR from '../csr'
 
+import axiosInstance from '../../axiosInstance'
 import './registrationForm.css'
 
 
@@ -50,13 +50,10 @@ const RegistrationForm =  ({changeAuth, loader, setUser}) => {
         }
         loader(true)
         const {privateHex} = getCSR({name, company})
-        let resp = await axios.post('http://192.168.88.21:3000/api/registeruser', 
-            {'name': name, 'company': company},
-                {headers: {
-                    'Accept': '*/*',
-                    'Content-Type': 'application/json; charset=utf-8',
-                    "Access-Control-Allow-Origin": "*"
-                }})
+        let resp = await axiosInstance.post(
+            '/api/registeruser', 
+            {'name': name, 'company': company}
+        )
         if(resp.data.error){
             setInfoMsg('This name is already in use')
             setOpenInfo(true)

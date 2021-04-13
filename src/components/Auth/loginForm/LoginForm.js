@@ -1,15 +1,15 @@
 import React, {useState, useEffect } from 'react'
-import axios from 'axios'
 
 import Container from '@material-ui/core/Container'
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import Grid from '@material-ui/core/Grid'
 import Link from '@material-ui/core/Link'
-import { DropzoneArea, DropzoneAreaBase } from 'material-ui-dropzone'
+import { DropzoneArea } from 'material-ui-dropzone'
 import Snackbar from '@material-ui/core/Snackbar'
 import Alert from '@material-ui/lab/Alert'
 import { useHistory } from "react-router-dom"
+import axiosInstance from '../../axiosInstance'
 
 import makeTheme from '../classes'
 
@@ -60,7 +60,7 @@ const LoginForm = ({changeAuth, loader, setUser}) => {
         loader(true)
         const certificate = localStorage.getItem('certificate')
         const privateKey = localStorage.getItem('privateKey')
-        const resp = await axios.post('http://192.168.88.21:3000/api/login', {
+        const resp = await axiosInstance.post('/api/login', {
             certificate,
             privateKey,
             flag:'login'
